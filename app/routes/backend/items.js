@@ -8,6 +8,7 @@ const ItemsModel 	= require(__path_schemas + 'items');
 const ValidateItems	= require(__path_validates + 'items');
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
+const mongoose = require('mongoose');
 
 const linkIndex		 = '/' + systemConfig.prefixAdmin + '/items/';
 const pageTitleIndex = 'Item Management';
@@ -58,33 +59,65 @@ router.get('/change-status/:id/:status', (req, res, next) => {
 	let currentStatus	= ParamsHelpers.getParam(req.params, 'status', 'active'); 
 	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 
 	let status			= (currentStatus === "active") ? "inactive" : "active";
-	
-	ItemsModel.updateOne({_id: id}, {status: status}, (err, result) => {
+	let data = {
+		status: status,
+		modified: {
+			user_id: 0,
+			username: "admin",
+			time: Date.now()
+		}
+	}
+
+	ItemsModel.updateOne({_id: id}, data, (err, result) => {
 		req.flash('success', notify.CHANGE_STATUS_SUCCESS, false);
 		res.redirect(linkIndex);
 	});
 });
 
 // Change status - Multi
-router.post('/change-status/:status', (req, res, next) => {
+router.post('/change-status/:status', async (req, res, next) => {
 	let currentStatus	= ParamsHelpers.getParam(req.params, 'status', 'active'); 
-	ItemsModel.updateMany({_id: {$in: req.body.cid }}, {status: currentStatus}, (err, result) => {
-		req.flash('success', util.format(notify.CHANGE_STATUS_MULTI_SUCCESS, result.n) , false);
-		res.redirect(linkIndex);
-	});
+	let data = {
+		status: currentStatus,
+		modified: {
+			user_id: 0,
+			username: "admin",
+			time: Date.now()
+		}
+	}
+	let changed = 0;
+
+	for(let item of req.body.cid){
+		await ItemsModel.findById(item, async (error, result) =>{
+			if(result.status != currentStatus){
+				changed++;
+			}
+		});
+		await ItemsModel.updateOne({_id: item}, data, (error, result)=>{
+			
+		});
+	}
+	req.flash('success', util.format(notify.CHANGE_STATUS_MULTI_SUCCESS, changed) , false);
+	res.redirect(linkIndex);
 });
 
 // Change ordering - Multi
-router.post('/change-ordering', (req, res, next) => {
+router.post('/change-ordering', async (req, res, next) => {
 	let cids 		= req.body.cid;
 	let orderings 	= req.body.ordering;
 	
+	let	modified = {
+		user_id: 0,
+		username: "admin",
+		time: Date.now()
+	}
+
 	if(Array.isArray(cids)) {
-		cids.forEach((item, index) => {
-			ItemsModel.updateOne({_id: item}, {ordering: parseInt(orderings[index])}, (err, result) => {});
-		})
+		for(let item in cids){
+			await ItemsModel.updateOne({_id: cids[item]}, {ordering: parseInt(orderings[item]), modified: modified }, (err, result) => {});
+		}
 	}else{ 
-		ItemsModel.updateOne({_id: cids}, {ordering: parseInt(orderings)}, (err, result) => {});
+		await ItemsModel.updateOne({_id: cids}, {ordering: parseInt(orderings), modified: modified}, (err, result) => {});
 	}
 
 	req.flash('success', notify.CHANGE_ORDERING_SUCCESS, false);
@@ -147,6 +180,11 @@ router.post('/save', (req, res, next) => {
 		if(errors) { 
 			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors});
 		}else {
+			item.created = {
+				user_id: 0,
+				username: "admin",
+				time: Date.now()
+			}
 			new ItemsModel(item).save().then(()=> {
 				req.flash('success', notify.ADD_SUCCESS, false);
 				res.redirect(linkIndex);
