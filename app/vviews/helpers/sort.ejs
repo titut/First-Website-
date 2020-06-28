@@ -1,0 +1,34 @@
+<%
+sortHelper = (sortType, sortField, linkPrefix) =>{
+
+    let arr = ["Name", "Status", "Ordering"];
+    let xHTML = ``;
+
+    arr.forEach((item) =>{
+        if(sortField == item.toLowerCase()){
+            if(sortType == "desc"){
+
+                xHTML += `<th>
+                        <a href="${linkPrefix}sort/${item.toLowerCase()}/asc" style="text-decoration: none; color:black;">${item}<i class="material-icons" style="font-size:12px">expand_less</i></a>
+                         </th>`;
+
+            } else {
+
+                xHTML += `<th>
+                        <a href="${linkPrefix}sort/${item.toLowerCase()}/refresh" style="text-decoration: none; color:black;">${item}<i class="material-icons" style="font-size:12px">expand_more</i></a>
+                         </th>`;
+
+            }
+        } else {
+
+            xHTML += `<th>
+                        <a href="${linkPrefix}sort/${item.toLowerCase()}/desc" style="text-decoration: none; color:black;">${item}<i class="material-icons" style="font-size:12px">unfold_more</i></a>
+                     </th>`;
+
+        }
+    });
+
+    return xHTML;
+
+} 
+%>

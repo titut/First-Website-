@@ -2,10 +2,13 @@
 <% include ./../../helpers/action %>
 <% include ./../../helpers/pagination %>
 <% include ./../../helpers/status %>
+<% include ./../../helpers/sort %>
 <% 
 	const collection = "items";
 	const linkPrefix = systemConfig.prefixAdmin + `/${collection}/`;
 %>
+
+<%= sortField %>
 
 <%- locals.flash %>
 <div class="row">
@@ -53,21 +56,40 @@
 								<tr>
 									<th><input type="checkbox" class="cbAll" /></th>
 									<th>#</th>
-									<th>Name</th>
-									<th>Status</th>
-									<th>Ordering</th>
+									
+									<%- sortHelper(sortType, sortField, linkPrefix) %>
+									<th>
+										Created
+									</th>
+									<th>
+										Modified
+									</th>
 									<th>Action</th>
 								</tr>
 							</thead>
 							<tbody>
 								<% items.forEach( (item, index) => { %>
 									<tr>
-										<td><input type="checkbox" name="cid" value="<%= item.id %>" /></td>
-										<td><%= index+1 %></td>
-										<td><%= item.name %></td>
-										<td><%- statusHelper(collection, item.status, item.id) %></td>
-										<td><input type="number" value="<%= item.ordering %>" class="text-center ordering"></td>
-										<td>
+										<td style="vertical-align: middle;"><input type="checkbox" name="cid" value="<%= item.id %>" /></td>
+										<td style="vertical-align: middle;"><%= index+1 %></td>
+										<td style="vertical-align: middle;"><%= item.name %></td>
+										<td style="vertical-align: middle;"><%- statusHelper(collection, item.status, item.id) %></td>
+										<td style="vertical-align: middle;"><input type="number" value="<%= item.ordering %>" class="text-center ordering"></td>
+										<td style="vertical-align: middle; width: 22%">
+											<span class="glyphicon glyphicon-user"> <%= item.created.username %></span>
+											<span>&nbsp;</span>
+											<span class="glyphicon glyphicon-time" style="word-spacing: -6px;"> <%= dateCreated[index] %></span>
+										</td>
+										<td style="vertical-align: middle; width:22%">
+											<% if(item.modified.username == undefined){ %>
+												Not yet modified
+											<% } else { %>
+												<span class="glyphicon glyphicon-user"> <%= item.modified.username %></span>
+												<span class="glyphicon glyphicon-time" style="word-spacing: -6px;"> <%= dateModified[index] %></span>
+											<% } %>
+											<span>&nbsp;</span>
+										</td>
+										<td style="vertical-align: middle;">
 											<a href="<%= linkPrefix %>form/<%= item.id %>" type="button" class="btn btn-warning btn-sm">Edit</a>
 											<a href="<%= linkPrefix %>delete/<%= item.id %>" type="button" class="btn btn-danger btn-sm btn-delete">Delete</a>
 										</td>

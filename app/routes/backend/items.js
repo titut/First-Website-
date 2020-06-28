@@ -1,6 +1,7 @@
 var express = require('express');
 var router 	= express.Router();
 const util = require('util');
+var moment = require('moment');
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
@@ -36,20 +37,61 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	await ItemsModel.count(objWhere).then( (data) => {
 		pagination.totalItems = data;
 	});
+
+	let sortField = req.session.sortField;
+	let sortType = req.session.sortType;
+
+	if(sortField == undefined){
+		sortField = "created.time"
+	}
+
+	if(sortType == undefined){
+		sortType = "desc"
+	}
+
+	console.log(sortField + ":" + sortType)
+
+	let ordering = {}
+
+	ordering[sortField] = sortType;
+
+	if(sortField == "status"){
+		if(sortType == "desc"){
+			ordering[sortField] = "asc";
+		} else {
+			ordering[sortField] = "desc";
+		}
+	}
 	
 	ItemsModel
 		.find(objWhere)
-		.sort({ordering: 'asc'})
+		.sort(ordering)
 		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
 		.limit(pagination.totalItemsPerPage)
-		.then( (items) => {
+		.then( async (items) => {
+			let dateCreated = [];
+			let dateModified = [];
+			for(let time of items){
+				dateCreated.push(moment(time.created.time).format("M/D/YYYY") + " " + moment(time.created.time).format("h:mm A"));
+			}
+			for(let time of items){
+				if(time.modified.time == undefined){
+					dateModified.push("");
+				} else {
+					dateModified.push(moment(time.modified.time).format("M/D/YYYY") + " " + moment(time.modified.time).format("h:mm A"));
+				}
+			}
 			res.render(`${folderView}list`, { 
 				pageTitle: pageTitleIndex,
 				items,
 				statusFilter,
 				pagination,
 				currentStatus,
-				keyword
+				keyword,
+				dateCreated,
+				dateModified,
+				sortType,
+				sortField
 			});
 		});
 });
@@ -170,7 +212,12 @@ router.post('/save', (req, res, next) => {
 			ItemsModel.updateOne({_id: item.id}, {
 				ordering: parseInt(item.ordering),
 				name: item.name,
-				status: item.status
+				status: item.status,
+				modified: {
+					user_id: 0,
+					username: "admin",
+					time: Date.now()
+				}
 			}, (err, result) => {
 				req.flash('success', notify.EDIT_SUCCESS, false);
 				res.redirect(linkIndex);
@@ -192,5 +239,20 @@ router.post('/save', (req, res, next) => {
 		}
 	}	
 });
+
+router.get("/sort/:sortField/:sortType", (req,res,next) => {
+	let sortField = req.params.sortField;
+	let sortType = req.params.sortType;
+
+	req.session.sortField = sortField;
+	req.session.sortType = sortType;
+	
+	if(sortType == "refresh"){
+		delete req.session.sortField;
+		delete req.session.sortType;
+	}
+
+	res.redirect(linkIndex);
+})
 
 module.exports = router;
