@@ -5,14 +5,14 @@ var moment = require('moment');
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
-const ItemsModel 	= require(__path_schemas + 'items');
+const GroupsModel 	= require(__path_schemas + 'groups');
 const ValidateItems	= require(__path_validates + 'items');
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
 const mongoose = require('mongoose');
 
-const linkIndex		 = '/' + systemConfig.prefixAdmin + '/items/';
-const pageTitleIndex = 'Item Management';
+const linkIndex		 = '/' + systemConfig.prefixAdmin + '/group/';
+const pageTitleIndex = 'Group Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
 const folderView	 = __path_views + 'pages/items/';
@@ -22,7 +22,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	let objWhere	 = {};
 	let keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
 	let currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
-	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus, "items");
+	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus, "groups");
 
 	let pagination 	 = {
 		totalItems		 : 1,
@@ -34,7 +34,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	if(currentStatus !== 'all') objWhere.status = currentStatus;
 	if(keyword !== '') objWhere.name = new RegExp(keyword, 'i');
 
-	await ItemsModel.count(objWhere).then( (data) => {
+	await GroupsModel.count(objWhere).then( (data) => {
 		pagination.totalItems = data;
 	});
 
@@ -61,7 +61,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 		}
 	}
 	
-	ItemsModel
+	GroupsModel
 		.find(objWhere)
 		.sort(ordering)
 		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
@@ -90,7 +90,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 				dateModified,
 				sortType,
 				sortField,
-				collections: "items"
+				collections: "group"
 			});
 		});
 });
@@ -109,7 +109,7 @@ router.get('/change-status/:id/:status', (req, res, next) => {
 		}
 	}
 
-	ItemsModel.updateOne({_id: id}, data, (err, result) => {
+	GroupsModel.updateOne({_id: id}, data, (err, result) => {
 		req.flash('success', notify.CHANGE_STATUS_SUCCESS, false);
 		res.redirect(linkIndex);
 	});
@@ -129,12 +129,12 @@ router.post('/change-status/:status', async (req, res, next) => {
 	let changed = 0;
 
 	for(let item of req.body.cid){
-		await ItemsModel.findById(item, async (error, result) =>{
+		await GroupsModel.findById(item, async (error, result) =>{
 			if(result.status != currentStatus){
 				changed++;
 			}
 		});
-		await ItemsModel.updateOne({_id: item}, data, (error, result)=>{
+		await GroupsModel.updateOne({_id: item}, data, (error, result)=>{
 			
 		});
 	}
@@ -155,10 +155,10 @@ router.post('/change-ordering', async (req, res, next) => {
 
 	if(Array.isArray(cids)) {
 		for(let item in cids){
-			await ItemsModel.updateOne({_id: cids[item]}, {ordering: parseInt(orderings[item]), modified: modified }, (err, result) => {});
+			await GroupsModel.updateOne({_id: cids[item]}, {ordering: parseInt(orderings[item]), modified: modified }, (err, result) => {});
 		}
 	}else{ 
-		await ItemsModel.updateOne({_id: cids}, {ordering: parseInt(orderings), modified: modified}, (err, result) => {});
+		await GroupsModel.updateOne({_id: cids}, {ordering: parseInt(orderings), modified: modified}, (err, result) => {});
 	}
 
 	req.flash('success', notify.CHANGE_ORDERING_SUCCESS, false);
@@ -168,7 +168,7 @@ router.post('/change-ordering', async (req, res, next) => {
 // Delete
 router.get('/delete/:id', (req, res, next) => {
 	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 	
-	ItemsModel.deleteOne({_id: id}, (err, result) => {
+	GroupsModel.deleteOne({_id: id}, (err, result) => {
 		req.flash('success', notify.DELETE_SUCCESS, false);
 		res.redirect(linkIndex);
 	});
@@ -178,7 +178,7 @@ router.get('/delete/:id', (req, res, next) => {
 router.post('/delete', async (req, res, next) => {
 	for(let item of req.body.cid){
 
-		await ItemsModel.deleteOne({_id: item});
+		await GroupsModel.deleteOne({_id: item});
 
 	}
 	req.flash('success', util.format(notify.DELETE_MULTI_SUCCESS, req.body.cid.length), false);
@@ -191,10 +191,10 @@ router.get(('/form(/:id)?'), (req, res, next) => {
 	let item	= {name: '', ordering: 0, status: 'novalue'};
 	let errors   = null;
 	if(id === '') { // ADD
-		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, collections: "items"});
+		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, collections: "group"});
 	}else { // EDIT
-		ItemsModel.findById(id, (err, item) =>{
-			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, collections: "items"});
+		GroupsModel.findById(id, (err, item) =>{
+			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, collections: "group"});
 		});	
 	}
 });
@@ -211,10 +211,11 @@ router.post('/save', (req, res, next) => {
 		if(errors) { 
 			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors});
 		}else {
-			ItemsModel.updateOne({_id: item.id}, {
+			GroupsModel.updateOne({_id: item.id}, {
 				ordering: parseInt(item.ordering),
 				name: item.name,
 				status: item.status,
+				group_acp: item.group_acp,
 				modified: {
 					user_id: 0,
 					username: "admin",
@@ -234,7 +235,7 @@ router.post('/save', (req, res, next) => {
 				username: "admin",
 				time: Date.now()
 			}
-			new ItemsModel(item).save().then(()=> {
+			new GroupsModel(item).save().then(()=> {
 				req.flash('success', notify.ADD_SUCCESS, false);
 				res.redirect(linkIndex);
 			})
@@ -255,6 +256,18 @@ router.get("/sort/:sortField/:sortType", (req,res,next) => {
 	}
 
 	res.redirect(linkIndex);
+})
+
+router.get("/change-acp/:id/:current", async(req,res,next) => {
+
+	if(req.params.current == "true"){
+		await GroupsModel.updateOne({_id: req.params.id}, {group_acp: false});
+	} else {
+		await GroupsModel.updateOne({_id: req.params.id}, {group_acp: true});
+	}
+
+	res.redirect(linkIndex);
+
 })
 
 module.exports = router;

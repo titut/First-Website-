@@ -1,5 +1,5 @@
 <% 
-	const collection = "items";
+	const collection = collections;
 	const linkPrefix = systemConfig.prefixAdmin + `/${collection}/`;
 %>
 
@@ -28,7 +28,11 @@
 									<option value="inactive" <%= (item.status == "inactive") ? 'selected="selected"' : '' %> >Inactive</option>
 								</select>
 							</div>
-							
+							<div class="form-group">
+								<label>Group ACP: &nbsp;</label>
+								<input type="radio" name="group_acp" value="true" <%= (item.group_acp) ? 'checked' : '' %>><label>&nbsp;Yes</label> &nbsp;
+								<input type="radio" name="group_acp" value="false" <%= (item.group_acp == false) ? 'checked' : '' %>><label>&nbsp;No</label>
+							</div>
 							<div class="form-group">
 								<input class="form-control" name="id" value="<%= item.id %>" type="hidden" >
 								<button type="submit" class="btn btn-primary">Submit </button>
@@ -41,3 +45,13 @@
 		</div>
 	</div>
 </div>
+
+<script>
+
+	ClassicEditor
+		.create( document.querySelector("#editor") )
+		.catch( error => {
+			console.log(error);
+		});
+
+</script>

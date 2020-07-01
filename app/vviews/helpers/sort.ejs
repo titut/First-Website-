@@ -1,28 +1,33 @@
 <%
 sortHelper = (sortType, sortField, linkPrefix) =>{
 
-    let arr = ["Name", "Status", "Ordering"];
+    let arr = ["Name", "Status", "group_acp", "Ordering"];
+    let width = [8, 10, 12, 12];
     let xHTML = ``;
 
-    arr.forEach((item) =>{
+    arr.forEach((item, index) =>{
+        let name = item;
+        if(item == "group_acp"){
+            name = "Group ACP";
+        }
         if(sortField == item.toLowerCase()){
             if(sortType == "desc"){
 
-                xHTML += `<th>
-                        <a href="${linkPrefix}sort/${item.toLowerCase()}/asc" style="text-decoration: none; color:black;">${item}<i class="material-icons" style="font-size:12px">expand_less</i></a>
+                xHTML += `<th style="width:${width[index]}%">
+                        <a href="${linkPrefix}sort/${item.toLowerCase()}/asc" style="text-decoration: none; color:black;">${name}<i class="material-icons" style="font-size:12px">expand_less</i></a>
                          </th>`;
 
             } else {
 
-                xHTML += `<th>
-                        <a href="${linkPrefix}sort/${item.toLowerCase()}/refresh" style="text-decoration: none; color:black;">${item}<i class="material-icons" style="font-size:12px">expand_more</i></a>
+                xHTML += `<th style="width:${width[index]}%">
+                        <a href="${linkPrefix}sort/${item.toLowerCase()}/refresh" style="text-decoration: none; color:black;">${name}<i class="material-icons" style="font-size:12px">expand_more</i></a>
                          </th>`;
 
             }
         } else {
 
-            xHTML += `<th>
-                        <a href="${linkPrefix}sort/${item.toLowerCase()}/desc" style="text-decoration: none; color:black;">${item}<i class="material-icons" style="font-size:12px">unfold_more</i></a>
+            xHTML += `<th style="width:${width[index]}%">
+                        <a href="${linkPrefix}sort/${item.toLowerCase()}/desc" style="text-decoration: none; color:black;">${name}<i class="material-icons" style="font-size:12px">unfold_more</i></a>
                      </th>`;
 
         }

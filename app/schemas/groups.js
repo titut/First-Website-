@@ -5,6 +5,7 @@ var schema = new mongoose.Schema({
     name: String, 
     status: String,
     ordering: Number,
+    group_acp: Boolean,
     created: {
         user_id: Number,
         username: String,
@@ -17,4 +18,4 @@ var schema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model(databaseConfig.col_items, schema);
+module.exports = mongoose.model(databaseConfig.col_groups, schema);
