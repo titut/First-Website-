@@ -5,23 +5,24 @@ var moment = require('moment');
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
-const ItemsModel 	= require(__path_schemas + 'items');
-const ValidateItems	= require(__path_validates + 'items');
+const UsersModel 	= require(__path_schemas + 'users');
+const GroupsModel 	= require(__path_schemas + 'groups');
+const Validate	= require(__path_validates + 'users');
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
 
-const linkIndex		 = '/' + systemConfig.prefixAdmin + '/items/';
-const pageTitleIndex = 'Item Management';
+const linkIndex		 = '/' + systemConfig.prefixAdmin + '/users/';
+const pageTitleIndex = 'User Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
-const folderView	 = __path_views + 'pages/items/';
+const folderView	 = __path_views + 'pages/users/';
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
 	let objWhere	 = {};
 	let keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
 	let currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
-	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus, "items");
+	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus, "users");
 
 	let pagination 	 = {
 		totalItems		 : 1,
@@ -33,7 +34,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	if(currentStatus !== 'all') objWhere.status = currentStatus;
 	if(keyword !== '') objWhere.name = new RegExp(keyword, 'i');
 
-	await ItemsModel.count(objWhere).then( (data) => {
+	await UsersModel.count(objWhere).then( (data) => {
 		pagination.totalItems = data;
 	});
 
@@ -60,7 +61,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 		}
 	}
 	
-	ItemsModel
+	UsersModel
 		.find(objWhere)
 		.sort(ordering)
 		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
@@ -88,8 +89,7 @@ router.get('(/status/:status)?', async (req, res, next) => {
 				dateCreated,
 				dateModified,
 				sortType,
-				sortField,
-				collections: "items"
+				sortField
 			});
 		});
 });
@@ -108,7 +108,7 @@ router.get('/change-status/:id/:status', (req, res, next) => {
 		}
 	}
 
-	ItemsModel.updateOne({_id: id}, data, (err, result) => {
+	UsersModel.updateOne({_id: id}, data, (err, result) => {
 		req.flash('success', notify.CHANGE_STATUS_SUCCESS, false);
 		res.redirect(linkIndex);
 	});
@@ -128,12 +128,12 @@ router.post('/change-status/:status', async (req, res, next) => {
 	let changed = 0;
 
 	for(let item of req.body.cid){
-		await ItemsModel.findById(item, async (error, result) =>{
+		await UsersModel.findById(item, async (error, result) =>{
 			if(result.status != currentStatus){
 				changed++;
 			}
 		});
-		await ItemsModel.updateOne({_id: item}, data, (error, result)=>{
+		await UsersModel.updateOne({_id: item}, data, (error, result)=>{
 			
 		});
 	}
@@ -154,10 +154,10 @@ router.post('/change-ordering', async (req, res, next) => {
 
 	if(Array.isArray(cids)) {
 		for(let item in cids){
-			await ItemsModel.updateOne({_id: cids[item]}, {ordering: parseInt(orderings[item]), modified: modified }, (err, result) => {});
+			await UsersModel.updateOne({_id: cids[item]}, {ordering: parseInt(orderings[item]), modified: modified }, (err, result) => {});
 		}
 	}else{ 
-		await ItemsModel.updateOne({_id: cids}, {ordering: parseInt(orderings), modified: modified}, (err, result) => {});
+		await UsersModel.updateOne({_id: cids}, {ordering: parseInt(orderings), modified: modified}, (err, result) => {});
 	}
 
 	req.flash('success', notify.CHANGE_ORDERING_SUCCESS, false);
@@ -167,7 +167,7 @@ router.post('/change-ordering', async (req, res, next) => {
 // Delete
 router.get('/delete/:id', (req, res, next) => {
 	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 	
-	ItemsModel.deleteOne({_id: id}, (err, result) => {
+	UsersModel.deleteOne({_id: id}, (err, result) => {
 		req.flash('success', notify.DELETE_SUCCESS, false);
 		res.redirect(linkIndex);
 	});
@@ -177,7 +177,7 @@ router.get('/delete/:id', (req, res, next) => {
 router.post('/delete', async (req, res, next) => {
 	for(let item of req.body.cid){
 
-		await ItemsModel.deleteOne({_id: item});
+		await UsersModel.deleteOne({_id: item});
 
 	}
 	req.flash('success', util.format(notify.DELETE_MULTI_SUCCESS, req.body.cid.length), false);
@@ -185,32 +185,48 @@ router.post('/delete', async (req, res, next) => {
 });
 
 // FORM
-router.get(('/form(/:id)?'), (req, res, next) => {
+router.get(('/form(/:id)?'), async (req, res, next) => {
 	let id		= ParamsHelpers.getParam(req.params, 'id', '');
 	let item	= {name: '', ordering: 0, status: 'novalue'};
 	let errors   = null;
+	let groups = [];
+
+	await GroupsModel.find({}, "_id name", (err, result) =>{
+
+		groups = result;
+
+	});
+
 	if(id === '') { // ADD
-		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, collections: "items"});
+		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, groups});
 	}else { // EDIT
-		ItemsModel.findById(id, (err, item) =>{
-			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, collections: "items"});
+		UsersModel.findById(id, (err, item) =>{
+			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, err, groups});
 		});	
 	}
 });
 
 // SAVE = ADD EDIT
-router.post('/save', (req, res, next) => {
+router.post('/save', async (req, res, next) => {
 	req.body = JSON.parse(JSON.stringify(req.body));
-	ValidateItems.validator(req);
+	Validate.validator(req);
 
 	let item = Object.assign(req.body);
 	let errors = req.validationErrors();
 
+	let groups = [];
+
+	await GroupsModel.find({}, "_id name", (err, result) =>{
+
+		groups = result;
+
+	});
+
 	if(typeof item !== "undefined" && item.id !== "" ){	// edit
 		if(errors) { 
-			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, collections: "items"});
+			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, groups});
 		}else {
-			ItemsModel.updateOne({_id: item.id}, {
+			UsersModel.updateOne({_id: item.id}, {
 				ordering: parseInt(item.ordering),
 				name: item.name,
 				status: item.status,
@@ -226,14 +242,18 @@ router.post('/save', (req, res, next) => {
 		}
 	}else { // add
 		if(errors) { 
-			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, collections: "items"});
+			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, groups});
 		}else {
 			item.created = {
 				user_id: 0,
 				username: "admin",
 				time: Date.now()
 			}
-			new ItemsModel(item).save().then(()=> {
+			item.group = {
+				id: req.body.group.split("-",1).toString(),
+				name: req.body.group.split("-")[1].toString()
+			}
+			new UsersModel(item).save().then(()=> {
 				req.flash('success', notify.ADD_SUCCESS, false);
 				res.redirect(linkIndex);
 			})

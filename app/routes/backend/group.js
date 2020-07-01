@@ -6,16 +6,15 @@ var moment = require('moment');
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
 const GroupsModel 	= require(__path_schemas + 'groups');
-const ValidateItems	= require(__path_validates + 'items');
+const ValidateItems	= require(__path_validates + 'groups');
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
-const mongoose = require('mongoose');
 
 const linkIndex		 = '/' + systemConfig.prefixAdmin + '/group/';
 const pageTitleIndex = 'Group Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
-const folderView	 = __path_views + 'pages/items/';
+const folderView	 = __path_views + 'pages/groups/';
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
@@ -209,7 +208,7 @@ router.post('/save', (req, res, next) => {
 
 	if(typeof item !== "undefined" && item.id !== "" ){	// edit
 		if(errors) { 
-			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors});
+			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, collections: "group"});
 		}else {
 			GroupsModel.updateOne({_id: item.id}, {
 				ordering: parseInt(item.ordering),
@@ -228,7 +227,7 @@ router.post('/save', (req, res, next) => {
 		}
 	}else { // add
 		if(errors) { 
-			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors});
+			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, collections: "group"});
 		}else {
 			item.created = {
 				user_id: 0,

@@ -4,7 +4,7 @@
 <% include ./../../helpers/status %>
 <% include ./../../helpers/sort %>
 <% 
-	const collection = collections;
+	const collection = "users";
 	const linkPrefix = systemConfig.prefixAdmin + `/${collection}/`;
 %>
 
@@ -72,7 +72,7 @@
 										<td style="vertical-align: middle;"><%= index+1 %></td>
 										<td style="vertical-align: middle;"><%= item.name %></td>
 										<td style="vertical-align: middle;"><%- statusHelper(collection, item.status, item.id) %></td>
-										<td style="vertical-align: middle;"><input type="number" value="<%= item.ordering %>" class="text-center ordering" style="width:82%"></td>
+										<td style="vertical-align: middle;"><%= item.group.name %></td>
 										<td style="vertical-align: middle; width: 22%">
 											<span class="glyphicon glyphicon-user"> <%= item.created.username %></span>
 											<span>&nbsp;</span>

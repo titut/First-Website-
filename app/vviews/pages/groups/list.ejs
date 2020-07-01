@@ -72,6 +72,7 @@
 										<td style="vertical-align: middle;"><%= index+1 %></td>
 										<td style="vertical-align: middle;"><%= item.name %></td>
 										<td style="vertical-align: middle;"><%- statusHelper(collection, item.status, item.id) %></td>
+										<td style="vertical-align: middle; text-align: center;"><a href="<%= linkPrefix %>change-acp/<%= item._id %>/<%= item.group_acp %>" style="text-decoration: none;"><%- (item.group_acp) ? '<span class="material-icons" style="font-size:1.4em">check_box</span>':'' %><%- (!item.group_acp) ? '<span class="material-icons" style="font-size:1.4em">check_box_outline_blank</span>':'' %></a></td>
 										<td style="vertical-align: middle;"><input type="number" value="<%= item.ordering %>" class="text-center ordering" style="width:82%"></td>
 										<td style="vertical-align: middle; width: 22%">
 											<span class="glyphicon glyphicon-user"> <%= item.created.username %></span>
