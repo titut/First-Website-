@@ -2,6 +2,7 @@ var express = require('express');
 var router 	= express.Router();
 const util = require('util');
 var moment = require('moment');
+const { group } = require('console');
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
@@ -31,8 +32,23 @@ router.get('(/status/:status)?', async (req, res, next) => {
 		pageRanges		 : 3
 	};
 
-	if(currentStatus !== 'all') objWhere.status = currentStatus;
-	if(keyword !== '') objWhere.name = new RegExp(keyword, 'i');
+	let groups = [];
+
+	await GroupsModel.find({}, "_id name", (err, result) =>{
+
+		groups = result;
+
+	});
+
+	let showGroup = req.session.showGroup;
+	if(showGroup == undefined) showGroup = "allGroup";
+
+	console.log(showGroup);
+
+	if(currentStatus !== 'all') objWhere["status"] = currentStatus;
+	if(keyword !== '') objWhere["name"] = new RegExp(keyword, 'i');
+	if(showGroup != "allGroup") objWhere["group.id"] = showGroup;
+
 
 	await UsersModel.count(objWhere).then( (data) => {
 		pagination.totalItems = data;
@@ -89,7 +105,9 @@ router.get('(/status/:status)?', async (req, res, next) => {
 				dateCreated,
 				dateModified,
 				sortType,
-				sortField
+				sortField,
+				groups,
+				showGroup
 			});
 		});
 });
@@ -187,7 +205,7 @@ router.post('/delete', async (req, res, next) => {
 // FORM
 router.get(('/form(/:id)?'), async (req, res, next) => {
 	let id		= ParamsHelpers.getParam(req.params, 'id', '');
-	let item	= {name: '', ordering: 0, status: 'novalue'};
+	let item	= {name: '', status: 'novalue', group: { id: '0' }};
 	let errors   = null;
 	let groups = [];
 
@@ -279,6 +297,22 @@ router.get("/sort/:sortField/:sortType", (req,res,next) => {
 	}
 
 	res.redirect(linkIndex);
-})
+});
+
+router.get("/showGroup/:id", async (req,res,next) =>{
+
+	if(req.params.id != "allGroup"){
+
+		req.session.showGroup = req.params.id;
+
+	} else {
+
+		req.session.showGroup = "allGroup";
+
+	}
+
+	res.redirect(linkIndex);
+
+});
 
 module.exports = router;
