@@ -201,7 +201,7 @@ router.get(('/form(/:id)?'), async (req, res, next) => {
 		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, groups});
 	}else { // EDIT
 		UsersModel.findById(id, (err, item) =>{
-			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, err, groups});
+			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, groups});
 		});	
 	}
 });
