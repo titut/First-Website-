@@ -29,9 +29,11 @@
 								<select name="group" class="form-control" >
 									<option value="novalue">Choose Group</option>
 									<% groups.forEach((items) =>{ %>
-
-										<option value="<%= items.id %>-<%= items.name %>"><%= items.name %></option>
-
+										<% if(item.group.id == items.id) { %>
+											<option value="<%= items.id %>-<%= items.name %>" selected><%= items.name %></option>
+										<% } else { %>
+											<option value="<%= items.id %>-<%= items.name %>"><%= items.name %></option>
+										<% } %>
 									<% }) %>
 								</select>
 							</div>
