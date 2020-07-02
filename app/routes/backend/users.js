@@ -227,9 +227,14 @@ router.post('/save', async (req, res, next) => {
 			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, groups});
 		}else {
 			UsersModel.updateOne({_id: item.id}, {
-				ordering: parseInt(item.ordering),
 				name: item.name,
 				status: item.status,
+				group: {
+
+					id: req.body.group.split("-",1).toString(),
+					name: req.body.group.split("-")[1].toString()
+
+				},
 				modified: {
 					user_id: 0,
 					username: "admin",
