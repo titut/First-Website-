@@ -6,5 +6,6 @@ module.exports = {
     folder_routers   : 'routes',
     folder_schemas   : 'schemas',
     folder_validates : 'validates',
-    folder_views     : 'vviews'
+    folder_views     : 'vviews',
+    folder_models    : 'models'
 };

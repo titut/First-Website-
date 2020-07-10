@@ -6,6 +6,7 @@ var moment = require('moment');
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
 const ItemsModel 	= require(__path_schemas + 'items');
+const ItemsModel1 	= require(__path_models + 'items');
 const ValidateItems	= require(__path_validates + 'items');
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
@@ -16,25 +17,31 @@ const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
 const folderView	 = __path_views + 'pages/items/';
 
+
+// ---------------------------------------------------------------------------
+
+
+
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
-	let objWhere	 = {};
-	let keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
-	let currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
-	let statusFilter = await UtilsHelpers.createFilterStatus(currentStatus, "items");
+	let model = {};
+	model.objWhere = {};
+	model.keyword		 = ParamsHelpers.getParam(req.query, 'keyword', '');
+	model.currentStatus= ParamsHelpers.getParam(req.params, 'status', 'all'); 
+	let statusFilter = await UtilsHelpers.createFilterStatus(model.currentStatus, "items");
 
-	let pagination 	 = {
+	model.pagination 	 = {
 		totalItems		 : 1,
 		totalItemsPerPage: 3,
 		currentPage		 : parseInt(ParamsHelpers.getParam(req.query, 'page', 1)),
 		pageRanges		 : 3
 	};
 
-	if(currentStatus !== 'all') objWhere.status = currentStatus;
-	if(keyword !== '') objWhere.name = new RegExp(keyword, 'i');
+	if(model.currentStatus !== 'all') model[objWhere].status = model.currentStatus;
+	if(model.keyword !== '') model[objWhere].name = new RegExp(keyword, 'i');
 
-	await ItemsModel.count(objWhere).then( (data) => {
-		pagination.totalItems = data;
+	await ItemsModel1.countItems(model.objWhere).then( (data) => {
+		model.pagination.totalItems = data;
 	});
 
 	let sortField = req.session.sortField;
@@ -48,23 +55,20 @@ router.get('(/status/:status)?', async (req, res, next) => {
 		sortType = "desc"
 	}
 
-	let ordering = {}
+	model.ordering = {}
 
-	ordering[sortField] = sortType;
+	model.ordering[sortField] = sortType;
 
 	if(sortField == "status"){
 		if(sortType == "desc"){
-			ordering[sortField] = "asc";
+			model.ordering[sortField] = "asc";
 		} else {
-			ordering[sortField] = "desc";
+			model.ordering[sortField] = "desc";
 		}
 	}
 	
-	ItemsModel
-		.find(objWhere)
-		.sort(ordering)
-		.skip((pagination.currentPage-1) * pagination.totalItemsPerPage)
-		.limit(pagination.totalItemsPerPage)
+	ItemsModel1
+		.listItems(model)
 		.then( async (items) => {
 			let dateCreated = [];
 			let dateModified = [];
@@ -82,9 +86,9 @@ router.get('(/status/:status)?', async (req, res, next) => {
 				pageTitle: pageTitleIndex,
 				items,
 				statusFilter,
-				pagination,
-				currentStatus,
-				keyword,
+				pagination: model.pagination,
+				currentStatus: model.currentStatus,
+				keyword: model.keyword,
 				dateCreated,
 				dateModified,
 				sortType,
@@ -98,17 +102,8 @@ router.get('(/status/:status)?', async (req, res, next) => {
 router.get('/change-status/:id/:status', (req, res, next) => {
 	let currentStatus	= ParamsHelpers.getParam(req.params, 'status', 'active'); 
 	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 
-	let status			= (currentStatus === "active") ? "inactive" : "active";
-	let data = {
-		status: status,
-		modified: {
-			user_id: 0,
-			username: "admin",
-			time: Date.now()
-		}
-	}
 
-	ItemsModel.updateOne({_id: id}, data, (err, result) => {
+	ItemsModel1.changeStatus(id, currentStatus).then((data) => {
 		req.flash('success', notify.CHANGE_STATUS_SUCCESS, false);
 		res.redirect(linkIndex);
 	});
@@ -125,18 +120,9 @@ router.post('/change-status/:status', async (req, res, next) => {
 			time: Date.now()
 		}
 	}
-	let changed = 0;
 
-	for(let item of req.body.cid){
-		await ItemsModel.findById(item, async (error, result) =>{
-			if(result.status != currentStatus){
-				changed++;
-			}
-		});
-		await ItemsModel.updateOne({_id: item}, data, (error, result)=>{
-			
-		});
-	}
+	let changed = await ItemsModel1.changeStatus(req.body.cid, currentStatus, 2);
+
 	req.flash('success', util.format(notify.CHANGE_STATUS_MULTI_SUCCESS, changed) , false);
 	res.redirect(linkIndex);
 });
@@ -145,20 +131,8 @@ router.post('/change-status/:status', async (req, res, next) => {
 router.post('/change-ordering', async (req, res, next) => {
 	let cids 		= req.body.cid;
 	let orderings 	= req.body.ordering;
-	
-	let	modified = {
-		user_id: 0,
-		username: "admin",
-		time: Date.now()
-	}
 
-	if(Array.isArray(cids)) {
-		for(let item in cids){
-			await ItemsModel.updateOne({_id: cids[item]}, {ordering: parseInt(orderings[item]), modified: modified }, (err, result) => {});
-		}
-	}else{ 
-		await ItemsModel.updateOne({_id: cids}, {ordering: parseInt(orderings), modified: modified}, (err, result) => {});
-	}
+	ItemsModel1.ordering(cids, orderings);
 
 	req.flash('success', notify.CHANGE_ORDERING_SUCCESS, false);
 	res.redirect(linkIndex);
@@ -167,7 +141,8 @@ router.post('/change-ordering', async (req, res, next) => {
 // Delete
 router.get('/delete/:id', (req, res, next) => {
 	let id				= ParamsHelpers.getParam(req.params, 'id', ''); 	
-	ItemsModel.deleteOne({_id: id}, (err, result) => {
+
+	ItemsModel1.delete(id).then(() =>{
 		req.flash('success', notify.DELETE_SUCCESS, false);
 		res.redirect(linkIndex);
 	});
@@ -180,6 +155,9 @@ router.post('/delete', async (req, res, next) => {
 		await ItemsModel.deleteOne({_id: item});
 
 	}
+
+	await ItemsModel1.delete(req.body.cid, "multi");
+
 	req.flash('success', util.format(notify.DELETE_MULTI_SUCCESS, req.body.cid.length), false);
 	res.redirect(linkIndex);
 });
@@ -204,25 +182,25 @@ router.post('/save', (req, res, next) => {
 	ValidateItems.validator(req);
 
 	let item = Object.assign(req.body);
+	let id = item.id;
+	delete item.id;
 	let errors = req.validationErrors();
 
-	if(typeof item !== "undefined" && item.id !== "" ){	// edit
+	if(typeof item !== "undefined" && id !== "" ){	// edit
 		if(errors) { 
 			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, collections: "items"});
 		}else {
-			ItemsModel.updateOne({_id: item.id}, {
-				ordering: parseInt(item.ordering),
-				name: item.name,
-				status: item.status,
-				modified: {
-					user_id: 0,
-					username: "admin",
-					time: Date.now()
-				}
-			}, (err, result) => {
+			item.modified = {
+				user_id: 0,
+				username: "admin",
+				time: Date.now()
+			};
+
+			ItemsModel1.save(item, id, "edit").then(() => {
 				req.flash('success', notify.EDIT_SUCCESS, false);
 				res.redirect(linkIndex);
 			});
+			
 		}
 	}else { // add
 		if(errors) { 
@@ -233,12 +211,12 @@ router.post('/save', (req, res, next) => {
 				username: "admin",
 				time: Date.now()
 			}
-			new ItemsModel(item).save().then(()=> {
+			ItemsModel1.save(item).then(()=> {
 				req.flash('success', notify.ADD_SUCCESS, false);
 				res.redirect(linkIndex);
 			})
 		}
-	}	
+	}
 });
 
 router.get("/sort/:sortField/:sortType", (req,res,next) => {
@@ -256,4 +234,4 @@ router.get("/sort/:sortField/:sortType", (req,res,next) => {
 	res.redirect(linkIndex);
 })
 
-module.exports = router;
+module.exports = router;	

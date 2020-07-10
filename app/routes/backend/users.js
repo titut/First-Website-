@@ -43,8 +43,6 @@ router.get('(/status/:status)?', async (req, res, next) => {
 	let showGroup = req.session.showGroup;
 	if(showGroup == undefined) showGroup = "allGroup";
 
-	console.log(showGroup);
-
 	if(currentStatus !== 'all') objWhere["status"] = currentStatus;
 	if(keyword !== '') objWhere["name"] = new RegExp(keyword, 'i');
 	if(showGroup != "allGroup") objWhere["group.id"] = showGroup;

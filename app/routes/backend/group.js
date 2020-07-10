@@ -2,10 +2,12 @@ var express = require('express');
 var router 	= express.Router();
 const util = require('util');
 var moment = require('moment');
+const { GatewayTimeout } = require('http-errors');
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
 const GroupsModel 	= require(__path_schemas + 'groups');
+const UsersModel 	= require(__path_schemas + 'users');
 const ValidateItems	= require(__path_validates + 'groups');
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
@@ -199,10 +201,9 @@ router.get(('/form(/:id)?'), (req, res, next) => {
 });
 
 // SAVE = ADD EDIT
-router.post('/save', (req, res, next) => {
+router.post('/save',  async (req, res, next) => {
 	req.body = JSON.parse(JSON.stringify(req.body));
 	ValidateItems.validator(req);
-
 	let item = Object.assign(req.body);
 	let errors = req.validationErrors();
 
@@ -210,6 +211,19 @@ router.post('/save', (req, res, next) => {
 		if(errors) { 
 			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, collections: "group"});
 		}else {
+			
+			let users = []
+
+			await UsersModel.find({"group.id": item.id}, function(err, result){
+				users = result;
+			});
+
+			for(let a of users){
+				await UsersModel.updateOne({_id: a.id}, {"group.name": item.name}, function(err, result){
+					console.log(result);
+				});
+			}
+
 			GroupsModel.updateOne({_id: item.id}, {
 				ordering: parseInt(item.ordering),
 				name: item.name,
@@ -221,9 +235,12 @@ router.post('/save', (req, res, next) => {
 					time: Date.now()
 				}
 			}, (err, result) => {
-				req.flash('success', notify.EDIT_SUCCESS, false);
-				res.redirect(linkIndex);
+
 			});
+
+			req.flash('success', notify.EDIT_SUCCESS, false);
+			res.redirect(linkIndex);
+
 		}
 	}else { // add
 		if(errors) { 
