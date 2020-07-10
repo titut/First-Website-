@@ -224,7 +224,7 @@ router.post('/save',  async (req, res, next) => {
 				});
 			}
 
-			GroupsModel.updateOne({_id: item.id}, {
+			await GroupsModel.updateOne({_id: item.id}, {
 				ordering: parseInt(item.ordering),
 				name: item.name,
 				status: item.status,
