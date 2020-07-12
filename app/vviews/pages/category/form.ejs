@@ -1,5 +1,5 @@
 <% 
-	const collection = collections;
+	const collection = "category";
 	const linkPrefix = systemConfig.prefixAdmin + `/${collection}/`;
 %>
 
@@ -17,6 +17,9 @@
 								<input class="form-control" name="name" value="<%= item.name %>" >
 							</div>
 							<div class="form-group">
+								<label>Slug:</label><span id="slug">&nbsp; HELLO WORLD!</span>
+							</div>
+							<div class="form-group">
 								<label>Ordering</label>
 								<input class="form-control" type="number" name="ordering" value="<%= item.ordering %>" >
 							</div>
@@ -29,29 +32,11 @@
 								</select>
 							</div>
 							<div class="form-group">
-								<label>Category</label>
-								<select name="category" class="form-control">
-									<option>Choose category</option>
-									<% cat.forEach((items) =>{ %>
-
-										<% if(item.category.id == items.id){ %>
-
-											<option value="<%= items.name %>-<%= items._id %>" selected><%= items.name %></option>
-
-										<% } else { %>
-
-											<option value="<%= items.name %>-<%= items._id %>"><%= items.name %></option>
-
-										<% } %>
-
-									<% }) %>
-								</select>
-							</div>
-							<div class="form-group">
 								<input class="form-control" name="id" value="<%= item.id %>" type="hidden" >
 								<button type="submit" class="btn btn-primary">Submit </button>
 								<a type="button" href="<%= linkPrefix %>" class="btn btn-default">Cancel</a>
 							</div>
+							<input name="slug">
 						</form>
 					</div>
 				</div>
@@ -61,5 +46,44 @@
 </div>
 
 <script>
+
+	changeSlug();
+
+	$("input[name='slug']").hide()
+
+	$("input[name='name']").change(function(){
+
+
+		changeSlug();
+		
+
+	});
+
+	function changeSlug(){
+
+		var slug = $('input[name="name"]').val();
+
+		slug = slug.toLowerCase();
+
+		slug = slug.split(" ");
+
+		var slugs = "";
+
+		for(let words of slug){
+			
+			if(slug[slug.length - 1] == words){
+				slugs+= words;
+			} else {
+				slugs+= words + "-";
+			}
+
+		}
+
+		$("#slug").html("&nbsp; " + slugs);
+
+		$("input[name='slug']").val($("#slug").html().substring(7));
+	}
+
+	console.log($("input[name='slug']").val());
 
 </script>

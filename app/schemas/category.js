@@ -5,6 +5,7 @@ var schema = new mongoose.Schema({
     name: String, 
     status: String,
     ordering: Number,
+    slug: String,
     created: {
         user_id: Number,
         username: String,
@@ -14,11 +15,7 @@ var schema = new mongoose.Schema({
         user_id: Number,
         username: String,
         time: Date
-    },
-    category: {
-        id: String,
-        name: String
     }
 });
 
-module.exports = mongoose.model(databaseConfig.col_items, schema);
+module.exports = mongoose.model(databaseConfig.col_category, schema);

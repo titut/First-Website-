@@ -13,9 +13,13 @@ sortHelper = (sortType, sortField, linkPrefix, collection) =>{
             arr = ["Name", "Status", "Group"];
             width = [10, 10, 10];
             break;
+        case "category":
+            arr = ["Name", "Slug", "Status", "Ordering"];
+            width = [8, 10, 10, 12];
+            break;
         default:
-            arr = ["Name", "Status", "Ordering"];
-            width = [10, 10, 10];
+            arr = ["Name", "Category", "Status", "Ordering"];
+            width = [10, 12, 10, 10];
     }
 
     let xHTML = ``;
