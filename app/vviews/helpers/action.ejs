@@ -7,14 +7,17 @@
             { value: "change-ordering/", name: "Change Ordering" },
             { value: "delete/", name: "Delete" },
         ];
+        if(collection == "users"){
+            actions.push({value: "deleteAvatar/", name: "Delete Avatar"});
+        }
         let xhtmlAction = '';
         let linkAddNew  = systemConfig.prefixAdmin + '/' + collection + '/form' ;
+        let linkUpload  = systemConfig.prefixAdmin + '/' + collection + '/avatar' ;
 
         actions.forEach((action)=> {
             let link = systemConfig.prefixAdmin + '/' + collection + '/' + action.value;
             xhtmlAction += `<option value="${link}">${action.name}</option>`;
         });
-
         return `<div class="zcontrols">
                 <select name="action" class="form-control slbAction">
                     ${xhtmlAction}

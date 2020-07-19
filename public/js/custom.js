@@ -8,7 +8,7 @@ $(document).ready(function () {
     }
 
     //call active menu
-    activeMenu();
+    //activeMenu();
 
     //check selectbox
     change_form_action("#zt-form .slbAction", "#zt-form","#btn-action");
@@ -43,13 +43,14 @@ $(document).ready(function () {
     });
 
     //active menu function
-    function activeMenu() {
+    /*function activeMenu() {
         var arrPathname = window.location.pathname.split('/');
         var pattern = (typeof arrPathname[2] !== 'undefined') ? arrPathname[2] : '';
 
         if (pattern != '') {
             $('#side-menu li a').each(function (index) {
                 var subject = $(this).attr("href");
+                
                 if (subject != "#" && subject.search(pattern) > 0) {
                     $(this).closest("li").addClass("active");
                     if ($(this).parents("ul").length > 1) {
@@ -58,11 +59,12 @@ $(document).ready(function () {
                     }
                     return;
                 }
+                return;
             });
         } else {
             $('#side-menu li').first().addClass("active");
         }
-    }
+    }*/
 
     //
     function change_form_action(slb_selector, form_selector, id_btn_action) {

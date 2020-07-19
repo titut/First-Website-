@@ -28,7 +28,6 @@ global.__path_models    = __path_app + pathConfig.folder_models + '/';
 const systemConfig = require(__path_configs + 'system');
 const databaseConfig = require(__path_configs + 'database');
 
-
 mongoose.connect(`mongodb+srv://${database.username}:${database.password}@billcluster-wakvv.gcp.mongodb.net/${database.database}?retryWrites=true&w=majority`);
 
 

@@ -88,6 +88,17 @@
 										<td style="vertical-align: middle;"><input type="checkbox" name="cid" value="<%= item.id %>" /></td>
 										<td style="vertical-align: middle;"><%= index+1 %></td>
 										<td style="vertical-align: middle;"><%= item.name %></td>
+										<td style="vertical-align: middle;">
+											<% if(item.avatar != undefined){ %>
+
+												<img class="img-responsive" src="uploads/<%= item.avatar %>">
+
+											<% } else { %>
+
+												<img class="img-responsive" src="uploads/noavatar.jpg">
+
+											<% } %>
+										</td>
 										<td style="vertical-align: middle;"><%- statusHelper(collection, item.status, item.id) %></td>
 										<td style="vertical-align: middle;"><%= item.group.name %></td>
 										<td style="vertical-align: middle; width: 22%">

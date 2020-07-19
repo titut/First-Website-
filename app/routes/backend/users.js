@@ -3,20 +3,66 @@ var router 	= express.Router();
 const util = require('util');
 var moment = require('moment');
 const { group } = require('console');
+const multer = require("multer");
+const GridFsStorage = require("multer-gridfs-storage");
+const fs = require("fs");
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
 const UsersModel 	= require(__path_schemas + 'users');
 const GroupsModel 	= require(__path_schemas + 'groups');
+const filesModel = require(__path_schemas + "photosfiles");
+const chunksModel = require(__path_schemas + "photoschunks");
 const Validate	= require(__path_validates + 'users');
 const UtilsHelpers 	= require(__path_helpers + 'utils');
 const ParamsHelpers = require(__path_helpers + 'params');
+const database = require(__path_configs + "database");
 
 const linkIndex		 = '/' + systemConfig.prefixAdmin + '/users/';
 const pageTitleIndex = 'User Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
 const folderView	 = __path_views + 'pages/users/';
+
+function randomStringGenerator( length ){
+	let a = 'abcdefghijklmnopqrstuvwxyz0123456789';
+	let string = '';
+	for(let i = 0; i < length; i++){
+		string += a.charAt(Math.floor(Math.random()*36));
+	}
+	return string;
+}
+
+/*var storage = new GridFsStorage({
+	url: `mongodb+srv://${database.username}:${database.password}@billcluster-wakvv.gcp.mongodb.net/${database.database}?retryWrites=true&w=majority`,
+	file: (req, file) => {
+		const match = ["image/png", "image/jpeg"];
+		let name = randomStringGenerator(15) + "." + file.originalname.split(".")[1];
+	
+		if (match.indexOf(file.mimetype) === -1) {
+		  const filename = name;
+		  return filename;
+		}
+	
+		return {
+		  bucketName: "photos",
+		  filename: name
+		};
+	  }
+});*/
+
+var storage = multer.diskStorage({
+
+	destination: function(req,res, cb){
+		cb(null, 'public/uploads');
+	},
+	filename: function(req, file, cb){
+		cb(null, randomStringGenerator(10) + "." + file.originalname.split('.')[1]);
+	}
+
+})
+
+var upload = multer({storage});
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {
@@ -205,13 +251,10 @@ router.get(('/form(/:id)?'), async (req, res, next) => {
 	let id		= ParamsHelpers.getParam(req.params, 'id', '');
 	let item	= {name: '', status: 'novalue', group: { id: '0' }};
 	let errors   = null;
-	let groups = [];
+	let getGroups = GroupsModel.find({}, "_id name").exec();
 
-	await GroupsModel.find({}, "_id name", (err, result) =>{
-
-		groups = result;
-
-	});
+	let groups = await getGroups;
+	
 
 	if(id === '') { // ADD
 		res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, groups});
@@ -223,28 +266,32 @@ router.get(('/form(/:id)?'), async (req, res, next) => {
 });
 
 // SAVE = ADD EDIT
-router.post('/save', async (req, res, next) => {
+router.post('/save', upload.single('avatar'), async (req, res, next) => {
 	req.body = JSON.parse(JSON.stringify(req.body));
 	Validate.validator(req);
 
 	let item = Object.assign(req.body);
 	let errors = req.validationErrors();
+	let getGroups = GroupsModel.find({}, "_id name").exec();
 
-	let groups = [];
-
-	await GroupsModel.find({}, "_id name", (err, result) =>{
-
-		groups = result;
-
-	});
+	let groups = await getGroups;
 
 	if(typeof item !== "undefined" && item.id !== "" ){	// edit
 		if(errors) { 
+			fs.unlink(req.file.path, (err) => {
+				if (err) {
+				  console.error(err)
+				  return
+				}
+			  
+				//file removed
+			  })
 			res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, groups});
 		}else {
 			UsersModel.updateOne({_id: item.id}, {
 				name: item.name,
 				status: item.status,
+				avatar: req.file.filename,
 				group: {
 
 					id: req.body.group.split("-",1).toString(),
@@ -263,6 +310,14 @@ router.post('/save', async (req, res, next) => {
 		}
 	}else { // add
 		if(errors) { 
+			fs.unlink(req.file.path, (err) => {
+				if (err) {
+				  console.error(err)
+				  return
+				}
+			  
+				//file removed
+			  })
 			res.render(`${folderView}form`, { pageTitle: pageTitleAdd, item, errors, groups});
 		}else {
 			item.created = {
@@ -274,12 +329,13 @@ router.post('/save', async (req, res, next) => {
 				id: req.body.group.split("-",1).toString(),
 				name: req.body.group.split("-")[1].toString()
 			}
+			item.avatar = req.file.filename;
 			new UsersModel(item).save().then(()=> {
 				req.flash('success', notify.ADD_SUCCESS, false);
 				res.redirect(linkIndex);
 			})
 		}
-	}	
+	}
 });
 
 router.get("/sort/:sortField/:sortType", (req,res,next) => {
@@ -312,5 +368,89 @@ router.get("/showGroup/:id", async (req,res,next) =>{
 	res.redirect(linkIndex);
 
 });
+
+
+//upload Avatar
+router.get('/avatar', (req, res, next)=>{
+	res.render(`${folderView}upload`, { pageTitle: "Upload An Avatar"});
+});
+
+router.post('/upload', (req, res, next)=>{
+	
+	
+	upload.single('avatar')(req, res, function (err) {
+		if (err) {
+		  // This is a good practice when you want to handle your errors differently
+	
+		  return
+		}
+	  })
+	res.redirect(linkIndex);
+
+});
+
+router.get('/get', async (req, res, next)=>{
+
+	let chunks;
+
+	let fileData = [];
+	
+	await filesModel.findOne({}).then(async (data)=>{
+		
+		let getchunks = chunksModel.find({'_doc.files_id': data._id}).sort({'_doc.n': 1}).exec();
+
+		chunks = await getchunks;
+
+	})
+
+	for(let a of chunks){
+		
+		fileData.push(a._doc.data.toString('base64'));
+
+	}
+
+	let finalFile = 'data:' + 'image/png' + ';base64,' + fileData.join('');
+
+	res.render(`${folderView}image`, {pageTitle: "GridFS Image", finalFile});
+
+});
+
+router.post('/deleteAvatar', async (req,res,next)=>{
+
+	if(Array.isArray(req.body.cid)){
+
+		for(let items of req.body.cid){
+			
+			await UsersModel.findOne({_id: items}).then((item)=>{
+
+				fs.unlink("public/uploads/" + item.avatar, (err) => {
+					if (err) throw err;
+					console.log(item.avatar);
+				});
+	
+			})
+			
+			await UsersModel.updateOne({_id: items}, {$unset: { avatar: "" }});
+		}
+
+	} else {
+
+
+		await UsersModel.findOne({_id: req.body.cid}).then((item)=>{
+
+			fs.unlink("public/uploads/" + item.avatar, (err) => {
+				if (err) throw err;
+				console.log(item.avatar);
+			});
+
+		})
+		
+		await UsersModel.updateOne({_id: req.body.cid}, {$unset: { avatar: "" }});
+
+	}
+	
+	res.redirect(linkIndex);
+
+})
 
 module.exports = router;
