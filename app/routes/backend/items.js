@@ -2,6 +2,27 @@ var express = require('express');
 var router 	= express.Router();
 const util = require('util');
 var moment = require('moment');
+var multer = require("multer");
+
+function randomStringGenerator( length ){
+	let a = 'abcdefghijklmnopqrstuvwxyz0123456789';
+	let string = '';
+	for(let i = 0; i < length; i++){
+		string += a.charAt(Math.floor(Math.random()*36));
+	}
+	return string;
+}
+
+var storage = multer.diskStorage({
+	destination: function(req,res, cb){
+		cb(null, 'public/uploads');
+	},
+	filename: function(req, file, cb){
+		cb(null, randomStringGenerator(10) + "." + file.originalname.split('.')[1]);
+	}
+})
+
+var upload = multer({ storage:storage });
 
 const systemConfig  = require(__path_configs + 'system');
 const notify  		= require(__path_configs + 'notify');
@@ -16,7 +37,7 @@ const linkIndex		 = '/' + systemConfig.prefixAdmin + '/items/';
 const pageTitleIndex = 'Item Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
-const folderView	 = __path_views + 'pages/items/';
+const folderView	 = __path_views_admin + 'pages/items/';
 
 
 // ---------------------------------------------------------------------------
@@ -166,7 +187,7 @@ router.post('/delete', async (req, res, next) => {
 // FORM
 router.get(('/form(/:id)?'), (req, res, next) => {
 	let id		= ParamsHelpers.getParam(req.params, 'id', '');
-	let item	= {name: '', ordering: 0, status: 'novalue'};
+	let item	= {name: '', ordering: 0, status: 'novalue', category: {id: "none"}};
 	let errors   = null;
 	CategoryModel.find({}, function(err, result){
 
@@ -177,11 +198,12 @@ router.get(('/form(/:id)?'), (req, res, next) => {
 				res.render(`${folderView}form`, { pageTitle: pageTitleEdit, item, errors, collections: "items", cat: result});
 			});	
 		}
+
 	});
 });
 
 // SAVE = ADD EDIT
-router.post('/save', (req, res, next) => {
+router.post('/save', upload.single("picture") ,(req, res, next) => {
 	req.body = JSON.parse(JSON.stringify(req.body));
 	ValidateItems.validator(req);
 
@@ -189,6 +211,7 @@ router.post('/save', (req, res, next) => {
 	let id = item.id;
 	delete item.id;
 	let errors = req.validationErrors();
+	console.log(item);
 
 	if(typeof item !== "undefined" && id !== "" ){	// edit
 		if(errors) { 
@@ -209,6 +232,7 @@ router.post('/save', (req, res, next) => {
 				id: item.category.split("-")[1]
 
 			}
+			item.picture = req.file.filename;
 			ItemsModel1.save(item, id, "edit").then(() => {
 				req.flash('success', notify.EDIT_SUCCESS, false);
 				res.redirect(linkIndex);

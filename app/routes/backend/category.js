@@ -16,7 +16,7 @@ const linkIndex		 = '/' + systemConfig.prefixAdmin + '/category/';
 const pageTitleIndex = 'Category Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
-const folderView	 = __path_views + 'pages/category/';
+const folderView	 = __path_views_admin + 'pages/category/';
 
 // List items
 router.get('(/status/:status)?', async (req, res, next) => {

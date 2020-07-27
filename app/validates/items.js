@@ -10,9 +10,6 @@ const options = {
 module.exports = {
     validator: (req) => {
         // NAME
-        req.checkBody('name', util.format(notify.ERROR_NAME, options.name.min, options.name.max) )
-            .isLength({ min: options.name.min, max: options.name.max })
-
         // ORDERING
         req.checkBody('ordering', util.format(notify.ERROR_ORDERING, options.ordering.min, options.ordering.max))
             .isInt({gt: options.ordering.min, lt: options.ordering.max});

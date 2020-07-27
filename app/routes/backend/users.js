@@ -22,7 +22,7 @@ const linkIndex		 = '/' + systemConfig.prefixAdmin + '/users/';
 const pageTitleIndex = 'User Management';
 const pageTitleAdd   = pageTitleIndex + ' - Add';
 const pageTitleEdit  = pageTitleIndex + ' - Edit';
-const folderView	 = __path_views + 'pages/users/';
+const folderView	 = __path_views_admin + 'pages/users/';
 
 function randomStringGenerator( length ){
 	let a = 'abcdefghijklmnopqrstuvwxyz0123456789';
