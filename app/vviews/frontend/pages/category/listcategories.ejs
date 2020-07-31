@@ -1,0 +1,34 @@
+<div class="col-lg-8 post-list">
+
+    <div class="latest-post-wrap">
+        <h4 class="cat-title">Category</h4>
+
+        <% category.forEach((item)=>{ %>
+
+            <a href="/category/<%= item.slug %>">
+
+                <div class="background" id="<%= item.slug %>">
+    
+                    <div class="category-name"><%= item.name %></div>
+                    <div class="overlay-category"></div>
+                    <img src="frontend/img/<%= item.slug %>.jpg" class="img-fluid" id="lifestyle-img">
+                    
+                </div>
+            </a>
+
+        <% })%>
+
+    </div>
+
+</div>  
+
+<script>
+
+    let backgrounds = $(".background");
+    for(let index of backgrounds){
+        let a = (1 - ($(`#${index.id} .category-name`).width()/$(`#${index.id} .overlay-category`).width())) * 50 + "%";
+        $(`#${index.id} .category-name`).css("left", a);
+    }
+
+
+</script>

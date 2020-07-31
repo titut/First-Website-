@@ -3316,3 +3316,50 @@ div.thumbnail_container .overlay-bg {
 .footer-area .footer-bottom .footer-social a:hover {
   background: #f6214b;
 }
+
+.background{
+  margin-top: 15px;
+  width: 710px;
+  height: 216.542px;
+  overflow: hidden;
+  position:relative;
+}
+
+
+.background .category-name{
+  position:absolute;
+  color: white;
+  z-index: 1;
+  font-size: 80px;
+  letter-spacing: 10px;
+  top: 42%;
+}
+
+.overlay-category{
+  position:absolute;
+  width: 710px;
+  height: 216.542px;
+  background-color: black; 
+  opacity: 0.4;
+}
+
+.overlay-category:hover{
+  background-color:none;
+}
+
+.background img{
+  width: 100%;
+  -webkit-transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  -o-transition: all 0.3s ease 0s;
+  transition: all 0.3s ease 0s;
+
+}
+
+.background:hover img{
+  transform: scale(1.05);
+}
+
+.background:hover .overlay-category{
+  opacity:0;
+}

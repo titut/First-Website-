@@ -48,16 +48,6 @@
     </div>
     <div class="logo-wrap">
         <div class="container">
-            <div class="row justify-content-between align-items-center">
-                <div class="col-lg-4 col-md-4 col-sm-12 logo-left no-padding">
-                    <a href="index.html">
-                        <img class="img-fluid" src="img/logo.png" alt="">
-                    </a>
-                </div>
-                <div class="col-lg-8 col-md-8 col-sm-12 logo-right no-padding ads-banner">
-                    <img class="img-fluid" src="img/banner-ad.jpg" alt="">
-                </div>
-            </div>
         </div>
     </div>
     <div class="container main-menu" id="main-menu">
@@ -72,12 +62,12 @@
                         <a href="/">Home</a>
                     </li>
                     <li class="menu-has-children">
-                        <a href="" class="sf-with-ul">Category</a>
+                        <a href="/category" class="sf-with-ul">Category</a>
                         <ul style="display: none;">
                             <% category.forEach((item)=>{ %>
 
                                 <li>
-                                    <a href="#"><%= item.name %></a>
+                                    <a href="/category/<%= item.slug %>"><%= item.name %></a>
                                 </li>
 
                             <% }) %>
@@ -113,18 +103,13 @@
                     <i class="lnr lnr-chevron-down"></i>
                     <a href="" class="sf-with-ul">Category</a>
                     <ul style="display: none;">
-                        <li>
-                            <a href="#">Category1</a>
-                        </li>
-                        <li>
-                            <a href="#">Category2</a>
-                        </li>
-                        <li>
-                            <a href="#">Category3</a>
-                        </li>
-                        <li>
-                            <a href="#">Category4</a>
-                        </li>
+                        <% category.forEach((item)=>{ %>
+
+                            <li>
+                                <a href="/category/<%= item.slug %>"><%= item.name %></a>
+                            </li>
+
+                        <% }) %>
                     </ul>
                 </li>
                 <li>
