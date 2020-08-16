@@ -5,8 +5,8 @@ const folderView	 = __path_views_admin + 'pages/home/';
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  console.log(folderView);
   res.render(`${folderView}index`, { pageTitle   : 'HomePage ' });
 });
 
 module.exports = router;
+  

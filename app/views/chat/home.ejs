@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/chat/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="page-header">
+        <div id="header-logo-container">
+            <img id="header-logo" src="/chat/img/chat.png">
+            <div id="header-title">
+                Bill's Chat Module
+            </div>
+        </div>
+        <a href="/adminBillLe/auth/logout" id="signOut">
+            Sign Out
+        </a>
+    </div>
+    <div class="container-fluid">
+        <div style="height: 8em;"></div>
+        <div class="row">
+            <div class="col-7">
+                <div id="chatbox">
+                    <div id="chatbox-header">
+                        <img id="chatbox-header-avatar" src="/uploads/<%= user.avatar %>">
+                        <div id="chatbox-header-name">
+                            <%= user.name %>
+                        </div>
+                    </div>
+                    <div id="chat-content">
+                        <div id="chat-content-text">
+                            <% chats.forEach((chat)=>{ %>
+
+                                <% if(chat.username == user.name){ %>
+
+                                    <div class="textRight">
+                                        <span><%= chat.content %></span>
+                                        <img class="text-avatar" src="/uploads/<%= chat.avatar %>">
+                                    </div>
+
+                                <% } else { %>
+
+                                    <div class="text">
+                                        <img class="text-avatar" src="/uploads/<%= chat.avatar %>">
+                                        <span><%= chat.content %></span>
+                                    </div>
+
+                                <% } %>
+
+                            <%})%>
+                        </div>
+                        <form id="chat-content-send">
+                            <textarea name="messageSent" rows="1"></textarea>
+                            <button id="sendImgContainer"><img id="sendImg" src="/chat/img/send.png" alt="send button"></button>
+                            <a><img id="uploadImg" src="/chat/img/upload.png" alt="send button"></a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-5">
+
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="username" value="<%= user.name %>">
+    <input type="hidden" name="avatar" value="<%= user.avatar %>">
+    <script src="/chat/js/style.js"></script>
+    <script>
+        $('#chat-content-text').scrollTop($('#chat-content-text').prop('scrollHeight')-$('#chat-content-text').height());
+        var socket = io();
+        $('form').submit(function(){
+            if($('textarea').val() != ''){
+                
+                socket.emit('chat', {
+                    username: $('input[name="username"]').val(),
+                    avatar: $('input[name="avatar"]').val(),
+                    content: $('textarea').val()
+                });
+
+            }
+            $('textarea').val('');
+            return false;
+        });
+        socket.on('chat message', (data)=>{
+            if(data.username == $('input[name="username"]').val()){
+                $('#chat-content-text').append(`<div class="textRight">
+                                        <span>${data.content}</span>
+                                        <img class="text-avatar" src="/uploads/${data.avatar}">
+                                    </div>`);
+            } else {
+                $('#chat-content-text').append(`<div class="text">
+                                        <img class="text-avatar" src="/uploads/${data.avatar}">
+                                        <span>${data.content}</span>
+                                    </div>`);
+            }
+        })
+    </script> 
+</body>
+</html>

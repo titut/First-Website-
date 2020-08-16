@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <% include ./../../elements/header %>
+</head>
+<body>
+
+    <div class="container">
+        <div class="login-container">
+            <div class="login-title">
+                Please Sign In
+            </div>
+            <% if(errors == undefined) { errors = [] }%>
+            <% errors.forEach((item)=>{ %>
+
+                <div style="padding-left: 40px; margin-bottom: 10px;">
+                    <%= item.msg %>
+                </div>
+
+            <% }) %> 
+            <div class="login-content">
+                <form method="POST">
+                    <input type="text" placeholder="username" name="username">
+                    <input type="password" placeholder="password" name="password">
+                    <button>Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+   
+</body>
+
+</html>

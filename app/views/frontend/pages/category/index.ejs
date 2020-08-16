@@ -1,0 +1,56 @@
+<div class="col-lg-8 post-list">
+    <!-- Start latest-post Area -->
+    <div class="latest-post-wrap">
+        <h4 class="cat-title"><%= group[0].name %></h4>
+
+
+        <% items.forEach((item)=>{ %>
+
+            <div class="single-latest-post row align-items-center">
+                <div class="col-lg-5 post-left">
+                    <div class="feature-img relative">
+                        <div class="overlay overlay-bg"></div>
+                        <img class="img-fluid" src="uploads/<%= item.picture %>" alt="">
+                    </div>
+                    <ul class="tags">
+                        <li>
+                            <a href="#"><%= item.category.name %></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-7 post-right">
+                    <a href="post/<%= item.id %>">
+                        <h4><%= item.name %></h4>
+                    </a>
+                    <ul class="meta">
+                        <li>
+                            <a href="#">
+                                <span class="lnr lnr-user"></span><%= item.created.username %></a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <span class="lnr lnr-calendar-full"></span><%= item.created.time.toString().substring(4,10) %>, <%= item.created.time.toString().substring(11, 15) %></a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <span class="lnr lnr-bubble"></span>06 Comments</a>
+                        </li>
+                    </ul>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt.
+                    </p>
+                </div>
+            </div>
+
+        <% }) %>
+
+
+
+
+        <div class="load-more">
+            <a href="#" class="primary-btn">Load More Posts</a>
+        </div>
+
+    </div>
+    <!-- End latest-post Area -->
+</div>

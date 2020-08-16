@@ -223,7 +223,7 @@ router.post('/save', upload.single("picture") ,(req, res, next) => {
 		}else {
 			item.modified = {
 				user_id: 0,
-				username: "admin",
+				username: req.user.name,
 				time: Date.now()
 			};
 			item.category = {
@@ -249,8 +249,8 @@ router.post('/save', upload.single("picture") ,(req, res, next) => {
 		}else {
 			item.created = {
 				user_id: 0,
-				username: "admin",
-				time: Date.now()
+				username: req.user.name,
+				time: Date.	now()
 			}
 			item.category = {
 

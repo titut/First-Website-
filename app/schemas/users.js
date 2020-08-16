@@ -5,6 +5,7 @@ var schema = new mongoose.Schema({
     name: String, 
     status: String,
     avatar: String,
+    password: String,
     group: {
         id: String,
         name: String

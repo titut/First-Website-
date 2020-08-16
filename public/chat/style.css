@@ -1,0 +1,191 @@
+body{
+  background-color: #e3e3e3;
+}
+
+::-webkit-scrollbar{
+  width: 0.2em;
+}
+
+.page-header{
+  width: 100%;
+  height: 5em;
+  background-color:#008ae0;
+  position: fixed;
+  z-index: 10;
+}
+
+#header-logo-container{
+  position:relative;
+  left: 5%;
+  display: inline-block;
+}
+
+#header-logo{ 
+  max-height: 3em;
+  position: relative;
+}
+
+#signOut{
+  display:inline-block;
+  position: fixed;
+  left: 70em;
+  color: white;
+  height: 5em;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-top: 1.5em;
+}
+
+#signOut:hover{
+  text-decoration: none;
+  background-color:#0084d6;
+}
+
+#header-title{
+  display:inline-block;
+  position: relative;
+  color: white;
+  font-family: sans-serif;
+  font-weight: 700;
+  font-size: 2em;
+  width: 20em;
+  left: 3%;
+}
+
+#chatbox{
+  height: 27em;
+  width: 40em;
+  display: block;
+  margin:auto;
+}
+
+#chatbox-header{
+  background-color:#008ae0;
+  height: 5em;
+  border-radius: 2em;
+}
+
+#chat-content{
+  margin-top: 1em;
+  background-color: #f5f5f5;
+  border-radius: 2em;
+  height: 21em;
+}
+
+#chatbox-header-avatar{
+  object-fit: cover;
+  width: 3.3em;
+  height: 3.3em;
+  border-radius: 50%;
+  position: relative;
+  left: 4%;
+}
+
+#chatbox-header-name{
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 1.3em;
+  letter-spacing: 1px;
+  font-weight: 400;
+  position: relative;
+  left: 16%;
+}
+
+#chat-content-text{
+  overflow-y:scroll;
+  padding-top: 1.5em;
+  height: 17em;
+}
+
+#chat-content-send{
+  height: 4em;
+  width: 100%;
+  padding-top: 0.8em;
+  padding-left: 2em;
+}
+
+#chat-content-send textarea{
+  width: 80%;
+  resize:none;
+  border-radius: 1em;
+  padding-left: 1em;
+}
+
+textarea:focus{
+  outline:none;
+}
+
+#sendImg{
+  max-height: 1.5em;
+}
+
+#sendImgContainer{
+  position:relative;
+  bottom: 0.65em;
+  left: 1.3em;
+  background: transparent;
+  border: none
+}
+
+#sendImgContainer:focus{
+  outline: none;
+}
+
+#uploadImg{
+  position:relative;
+  max-height: 1.5em;
+  left: 1.8em;
+  bottom: 0.65em;
+}
+
+.text{
+  margin-bottom: 1em;
+}
+
+.textRight{
+  margin-bottom: 1em;
+}
+
+.text{
+  padding-left: 2em;
+  text-align:left;
+}
+
+.textRight{
+  padding-right: 2em;
+  text-align:right;
+}
+
+.text .text-avatar{
+  border-radius: 50%;
+  width: 2em;
+  height: 2em;
+  object-fit: cover;
+  margin-right: 1em;
+}
+
+.textRight .text-avatar{
+  border-radius: 50%;
+  width: 2em;
+  height: 2em;
+  object-fit: cover;
+  margin-left: 1em;
+}
+
+.text span{
+  position: relative;
+  border-radius: 1em;
+  background-color: #e3e3e3;
+  padding: 0.3em 1em;
+  top: 0.2em;
+  width: 2em;
+}
+
+.textRight span{
+  position: relative;
+  border-radius: 1em;
+  background-color: #008ae0;
+  padding: 0.3em 1em;
+  top: 0.2em;
+  color: white;
+}

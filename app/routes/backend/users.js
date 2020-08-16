@@ -290,6 +290,7 @@ router.post('/save', upload.single('avatar'), async (req, res, next) => {
 		}else {
 			UsersModel.updateOne({_id: item.id}, {
 				name: item.name,
+				password: item.password,
 				status: item.status,
 				avatar: req.file.filename,
 				group: {
