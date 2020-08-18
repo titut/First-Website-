@@ -9,4 +9,11 @@ router.get('/', async (req,res,next)=>{
 
 });
 
+router.get('/deleteChat', async(req,res,next)=>{
+    for(let id of await chatModel.find({}).exec()){
+        await chatModel.deleteOne({_id: id._id});
+    }       
+    res.redirect('/chat');
+})
+
 module.exports = router;

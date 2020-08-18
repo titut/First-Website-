@@ -52,6 +52,7 @@
 
                             <%})%>
                         </div>
+                        <div id="user-typing"></div>
                         <form id="chat-content-send">
                             <textarea name="messageSent" rows="1"></textarea>
                             <button id="sendImgContainer"><img id="sendImg" src="/chat/img/send.png" alt="send button"></button>
@@ -60,8 +61,20 @@
                     </div>
                 </div>
             </div>
-            <div class="col-5">
 
+
+
+            <div class="col-5">
+                <div id="user-online-container">
+                    <div id="user-online-header">
+                    </div>
+                    <div id="user-online-content">
+                        
+                    </div>
+                </div>
+                <div id="chat-room-container">
+                    
+                </div>
             </div>
         </div>
     </div>
@@ -71,6 +84,16 @@
     <script>
         $('#chat-content-text').scrollTop($('#chat-content-text').prop('scrollHeight')-$('#chat-content-text').height());
         var socket = io();
+        socket.on('connected', (data)=>{
+            socket.emit('user connected', {
+                username: $('input[name="username"]').val(),
+                avatar: $('input[name="avatar"]').val(),
+                socketID: data
+            });
+        })
+        $('textarea').keypress(function(){
+            socket.emit('user typing', $('input[name="username"]').val());
+        });
         $('form').submit(function(){
             if($('textarea').val() != ''){
                 
@@ -96,7 +119,24 @@
                                         <span>${data.content}</span>
                                     </div>`);
             }
+            $('#chat-content-text').scrollTop($('#chat-content-text').prop('scrollHeight')-$('#chat-content-text').height());
         })
-    </script> 
+        socket.on('user typing', (data)=>{
+            $('#user-typing').text(data).show().delay(1500).hide(100);
+        })
+        socket.on('users online', (data)=>{
+            $('#user-online-header').html(`Users (${data.length})`);
+            let html = '';
+            for(let index of data){
+                html += `
+                    <div id="user-online-content-info">
+                        <img src="/uploads/${index.avatar}">
+                        <div>${index.username}</div>
+                    </div>
+                `;
+            }
+            $('#user-online-content').html(html);
+        })
+    </script>
 </body>
 </html>
