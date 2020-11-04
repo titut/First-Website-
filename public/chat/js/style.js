@@ -13,4 +13,16 @@ $(document).ready(()=>{
     $('#chatbox-header-avatar').css('top', chatAvatarTop);
     $('#chatbox-header-name').css('bottom', chatNameTop);
 
+    $('.more-options-container').hide();
+    $(document).click(function(event){
+        if(event.target.className == 'more'){
+            $('.more-options-container').show();
+            $('.chat-container').css('left', '57%');
+            $(this).hide();
+        } else {
+            $('.more-options-container').hide();
+            $('.chat-container').removeAttr('style');
+            $('.more').show();
+        }
+    });
 })

@@ -4,7 +4,9 @@ var schema = new mongoose.Schema({
     username: String,
     avatar: String,
     content: String,
-    sent: Date
+    sent: Date,
+    otherUser: Array,
+    seenBy: Array
 })
 
 module.exports = mongoose.model('chats', schema);

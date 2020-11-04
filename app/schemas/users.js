@@ -6,6 +6,10 @@ var schema = new mongoose.Schema({
     status: String,
     avatar: String,
     password: String,
+    friends: Array,
+    sentFrom: Array,
+    sentTo: Array,
+    notifications: Array,
     group: {
         id: String,
         name: String

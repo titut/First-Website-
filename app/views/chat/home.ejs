@@ -6,6 +6,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/chat/style.css">
     <script src="/socket.io/socket.io.js"></script>
+    <title>Bill's Chat Module</title>
+    <link rel="icon" type="image/gif" href="/chat/img/chat.png">
 </head>
 <body>
     <div class="page-header">
@@ -15,6 +17,11 @@
                 Bill's Chat Module
             </div>
         </div>
+        <img id="alarm" src="/chat/img/alarm.png">
+        <div id="notifications">1</div>
+        <a href="/chat" id="Home">
+            Home
+        </a>
         <a href="/adminBillLe/auth/logout" id="signOut">
             Sign Out
         </a>
@@ -33,12 +40,19 @@
                     <div id="chat-content">
                         <div id="chat-content-text">
                             <% chats.forEach((chat)=>{ %>
-
                                 <% if(chat.username == user.name){ %>
 
                                     <div class="textRight">
-                                        <span><%= chat.content %></span>
-                                        <img class="text-avatar" src="/uploads/<%= chat.avatar %>">
+                                        <% if(chat.seenBy.length != 0){ %>
+                                            <div class="seenBy">
+                                                <img src='/chat/img/eye.png'>
+                                                <div style="display: inline-block;"><%= chat.seenBy %></div>
+                                            </div>
+                                        <% }%>
+                                        <div style="display: inline-block;">
+                                            <span><%= chat.content %></span>
+                                            <img class="text-avatar" src="/uploads/<%= chat.avatar %>">
+                                        </div>
                                     </div>
 
                                 <% } else { %>
@@ -46,6 +60,12 @@
                                     <div class="text">
                                         <img class="text-avatar" src="/uploads/<%= chat.avatar %>">
                                         <span><%= chat.content %></span>
+                                        <% if(chat.seenBy.length != 0){ %>
+                                            <div class="seenBy">
+                                                <img src='/chat/img/eye.png'>
+                                                <div style="display: inline-block;"><%= chat.seenBy %></div>
+                                            </div>
+                                        <% }%>
                                     </div>
 
                                 <% } %>
@@ -67,28 +87,72 @@
             <div class="col-5">
                 <div id="user-online-container">
                     <div id="user-online-header">
+
                     </div>
                     <div id="user-online-content">
                         
                     </div>
                 </div>
                 <div id="chat-room-container">
-                    
+                    <div id="chat-room-header">
+                        Friends (<%= user.friends.length %>)
+                    </div> 
+                    <div id="chat-room-content">
+                        <% user.friends.forEach((item)=>{ %>
+                            <div class="user-online-content-info">
+                                <img src="/uploads/<%= item.avatar %>">
+                                <div><%= item.name %></div>
+                                <a class="chat-container" href="/chat/<%= user.name %>/<%= item.name %>"><div class="chat">Chat</div></a>
+                                <div class="more-container"> 
+                                    <img class="more" src="/chat/img/more.png">
+                                </div>
+                                <div class="more-options-container">
+                                    <div class="more-options">
+                                        <a href="/chat/removeFriend/<%= item.name %>"><div>Remove Friend</div></a>
+                                        <a><div>Block Friend</div></a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% })%>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <input type="hidden" name="username" value="<%= user.name %>">
     <input type="hidden" name="avatar" value="<%= user.avatar %>">
+    <% page.forEach((item)=>{ %>
+
+        <input type="hidden" name="page" value="<%= item %>">
+
+    <% }) %>
+
     <script src="/chat/js/style.js"></script>
     <script>
+        function getPage(){
+            let array = [];
+            for(let item of $('input[name="page"]')){
+                array.push(item.value);
+            }
+            return array;
+        }
+        function compareArray(array1, array2){
+            for(let item of array2){
+                if(!array1.includes(item)){
+                    return false;
+                }
+            }
+            return true;
+        }
         $('#chat-content-text').scrollTop($('#chat-content-text').prop('scrollHeight')-$('#chat-content-text').height());
         var socket = io();
         socket.on('connected', (data)=>{
             socket.emit('user connected', {
                 username: $('input[name="username"]').val(),
                 avatar: $('input[name="avatar"]').val(),
-                socketID: data
+                sentTo: <%- JSON.stringify(user.sentTo) %>,
+                socketID: data,
+                page: getPage()
             });
         })
         $('textarea').keypress(function(){
@@ -100,7 +164,8 @@
                 socket.emit('chat', {
                     username: $('input[name="username"]').val(),
                     avatar: $('input[name="avatar"]').val(),
-                    content: $('textarea').val()
+                    content: $('textarea').val(),
+                    otherUser: getPage()
                 });
 
             }
@@ -108,16 +173,18 @@
             return false;
         });
         socket.on('chat message', (data)=>{
-            if(data.username == $('input[name="username"]').val()){
-                $('#chat-content-text').append(`<div class="textRight">
-                                        <span>${data.content}</span>
-                                        <img class="text-avatar" src="/uploads/${data.avatar}">
-                                    </div>`);
-            } else {
-                $('#chat-content-text').append(`<div class="text">
-                                        <img class="text-avatar" src="/uploads/${data.avatar}">
-                                        <span>${data.content}</span>
-                                    </div>`);
+            if(compareArray(data.otherUser, getPage())){            
+                if(data.username == $('input[name="username"]').val()){
+                    $('#chat-content-text').append(`<div class="textRight">
+                                            <span>${data.content}</span>
+                                            <img class="text-avatar" src="/uploads/${data.avatar}">
+                                        </div>`);
+                } else {
+                    $('#chat-content-text').append(`<div class="text">
+                                            <img class="text-avatar" src="/uploads/${data.avatar}">
+                                            <span>${data.content}</span>
+                                        </div>`);
+                }
             }
             $('#chat-content-text').scrollTop($('#chat-content-text').prop('scrollHeight')-$('#chat-content-text').height());
         })
@@ -125,17 +192,71 @@
             $('#user-typing').text(data).show().delay(1500).hide(100);
         })
         socket.on('users online', (data)=>{
-            $('#user-online-header').html(`Users (${data.length})`);
+            $('#user-online-header').html(`Users Online (${data.length})`);
             let html = '';
+            let pending = <%- JSON.stringify(user.sentTo) %>;
+            let invite = <%- JSON.stringify(user.sentFrom) %>;
+            let friends = <%- JSON.stringify(user.friends) %>;
             for(let index of data){
-                html += `
-                    <div id="user-online-content-info">
-                        <img src="/uploads/${index.avatar}">
-                        <div>${index.username}</div>
-                    </div>
-                `;
+                let linkAdd = '/chat/addFriends/' + index.username;
+                let linkAccept = '/chat/acceptFriends/' + index.username;
+                let linkDeny = '/chat/denyFriends/' + index.username;
+                if(compareArray(index.page, getPage())){
+                    if(index.username == $('input[name="username"]').val()){
+                        html += `
+                        <div class="user-online-content-info">
+                            <img src="/uploads/${index.avatar}">
+                            <div>${index.username}</div>
+                            <div id="you">You</div>
+                        </div>
+                        `;
+                    } else {
+                        if(pending.includes(index.username)){
+                            html += `
+                            <div class="user-online-content-info">
+                                <img src="/uploads/${index.avatar}">
+                                <div>${index.username}</div>
+                                <a><div class="pending">Pending</div></a>
+                            </div>
+                            `;
+                        } else if(invite.includes(index.username) || index.sentTo.includes(<%- JSON.stringify(user.name) %>)){
+                            html += `
+                            <div class="user-online-content-info">
+                                <img src="/uploads/${index.avatar}">
+                                <div>${index.username}</div>
+                                <a href="${linkAccept}"><div data-foo="${index.username}" class="accept">Accept</div></a>
+                                <a href="${linkDeny}"><div data-foo="${index.username}" class="deny">Deny</div></a>
+                            </div>
+                            `;
+                        } else if(friends.includes(index.username)){
+                            html += `
+                            <div class="user-online-content-info">
+                                <img src="/uploads/${index.avatar}">
+                                <div>${index.username}</div>
+                                <a><div class="add">Added</div></a>
+                            </div>
+                            `;
+                        } else {
+                            html += `
+                            <div class="user-online-content-info">
+                                <img src="/uploads/${index.avatar}">
+                                <div>${index.username}</div>
+                                <a href="${linkAdd}"><div data-foo="${index.username}" class="add">Add</div></a>
+                            </div>
+                            `;
+                        }
+                    }
+                }
             }
             $('#user-online-content').html(html);
+        });
+        $(document).click(function(e){
+            if($(e.target).attr('class') == "deny"){
+                socket.emit('deny/accept', {
+                    userSent: $(e.target).data('foo'),
+                    userReceived: <%- JSON.stringify(user.name) %>
+                });
+            }
         })
     </script>
 </body>

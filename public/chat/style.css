@@ -1,3 +1,7 @@
+:root{
+  --main-color: #008ae0;
+}
+
 body{
   background-color: #e3e3e3;
 }
@@ -13,7 +17,7 @@ body{
 .page-header{
   width: 100%;
   height: 5em;
-  background-color:#008ae0;
+  background-color:var(--main-color);
   position: fixed;
   z-index: 10;
 }
@@ -22,6 +26,23 @@ body{
   position:relative;
   left: 5%;
   display: inline-block;
+}
+
+#alarm{
+  width: 1.3em; height: 1.3em; position: absolute; left: 62em; top: 1.65em;
+}
+
+#notifications{
+  position: absolute;
+  background-color: #f5aa42; 
+  color: white; 
+  width: 1.6em; 
+  height: 1.6em;
+  font-size: 0.7em;
+  text-align: center;
+  border-radius: 50%;
+  left: 89.8em;
+  top: 3.5em;
 }
 
 #header-logo{ 
@@ -40,7 +61,23 @@ body{
   padding-top: 1.5em;
 }
 
+#Home{
+  display:inline-block;
+  position: fixed;
+  left: 65em;
+  color: white;
+  height: 5em;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-top: 1.5em;
+}
+
 #signOut:hover{
+  text-decoration: none;
+  background-color:#0084d6;
+}
+
+#Home:hover{
   text-decoration: none;
   background-color:#0084d6;
 }
@@ -64,7 +101,7 @@ body{
 }
 
 #chatbox-header{
-  background-color:#008ae0;
+  background-color:var(--main-color);
   height: 5em;
   border-radius: 2em;
 }
@@ -188,7 +225,7 @@ textarea:focus{
 .textRight span{
   position: relative;
   border-radius: 1em;
-  background-color: #008ae0;
+  background-color: var(--main-color);
   padding: 0.3em 1em;
   top: 0.2em;
   color: white;
@@ -209,7 +246,7 @@ textarea:focus{
 #user-online-header{
   height: 2.5em;
   border-radius: 1em;
-  background-color:#008ae0;
+  background-color:var(--main-color);
   color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   padding-top: 0.4em;
   padding-left: 2em;
@@ -223,7 +260,7 @@ textarea:focus{
   overflow-y: scroll;
 }
 
-#user-online-content-info{
+.user-online-content-info{
   margin: auto;
   margin-top: 1em;
   height: 3.6em;
@@ -231,15 +268,181 @@ textarea:focus{
   padding-left: 0.5em;
 }
 
-#user-online-content-info img{
+.user-online-content-info img{
   height: 2.7em;
   width: 2.7em;
   border-radius: 50%;
   object-fit: cover;
 }
 
-#user-online-content-info div{
+.user-online-content-info div{
   padding-top:0.2em;
   display:inline-block;
   margin-left: 1em;
+}
+
+#you{
+  margin-left: 0em !important;
+  position: absolute;
+  left: 72%;
+  background-color: var(--main-color);
+  color: white;
+  padding: 0.3em 1em;
+  border-radius: 1em;
+} 
+
+#chat-room-container{
+  margin-top: 2em;
+  width: 90%;
+  height: 15em;
+  margin-bottom: 2em;
+}
+
+#chat-room-header{
+  height: 2.5em;
+  border-radius: 1em;
+  background-color:var(--main-color);
+  color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  padding-top: 0.4em;
+  padding-left: 2em;
+}
+
+#chat-room-content{
+  background-color: #f5f5f5;
+  margin-top: 1em;
+  height: 11.5em;
+  border-radius: 1em;
+  overflow-y: scroll;
+}
+
+.add{
+  margin-left: 0em !important;
+  position: absolute;
+  left: 72%;
+  background-color: #e3e3e3;
+  color: black;
+  padding: 0.3em 1em;
+  border-radius: 1em;
+}
+
+.pending{
+  margin-left: 0em !important;
+  position: absolute;
+  left: 66%;
+  background-color: #e3e3e3;
+  color: black;
+  padding: 0.3em 1em;
+  border-radius: 1em;
+}
+
+.deny{
+  margin-left: 0em !important;
+  position: absolute;
+  left: 70%;
+  background-color: #e3e3e3;
+  color: black;
+  padding: 0.3em 1em;
+  border-radius: 1em;
+}
+
+.accept{
+  margin-left: 0em !important;
+  position: absolute;
+  left: 53%;
+  background-color: #e3e3e3;
+  color: black;
+  padding: 0.3em 1em;
+  border-radius: 1em;
+}
+
+.chat{
+  margin-left: 0em !important;
+  background-color: #e3e3e3;
+  color: black;
+  padding: 0.3em 1em;
+  border-radius: 1em;
+}
+
+.chat-container{
+  position: absolute;
+  left: 68%;
+  padding-top: 0.28em;
+}
+
+.more{
+  height: 1em !important;
+  width: 1em !important;
+  object-fit: contain;
+}
+
+.more:hover{
+  cursor: pointer;
+}
+
+.more-container{
+  margin-left: 0em !important;
+  position: absolute;
+  left: 81%;
+  padding-top: 0.37em !important;
+}
+
+.more-options{
+  background-color: var(--main-color);
+  height: 4.3em;
+  border-radius: 1em;
+  border-top-left-radius: 0em;
+  color: white;
+  width: 9em;
+}
+
+.more-options-container{
+  padding-top: 0.3em !important;
+  position: absolute;
+  left: 65%;
+}
+
+.more-options a:first-child div{
+  border-bottom: solid 1px;
+  padding-bottom: 0.2em;
+}
+
+.more-options div{
+  width: 7em;
+  display:block !important;
+}
+
+.more-options a{
+  color: white;
+}
+
+.more-options a:hover{
+  text-decoration: none;
+}
+
+.textRight .seenBy{
+  width: 1em;
+  white-space: nowrap;
+  display: inline-block;
+  position: relative;
+  top: 2em;
+  left: 1.4em;
+}
+
+.text .seenBy{
+  width: 1em;
+  white-space: nowrap;
+  display: inline-block;
+  position: relative;
+  top: 2em;
+  right: 6em;
+}
+
+.seenBy img{
+  width: 1em; 
+  height: 1em;
+}
+
+.seenBy div{
+  color: #9c9c9c;
+  font-size: 0.75em;
 }
